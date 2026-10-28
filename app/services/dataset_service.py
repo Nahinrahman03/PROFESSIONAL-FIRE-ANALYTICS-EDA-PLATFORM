@@ -38,11 +38,15 @@ class DatasetService:
             candidates.append(Path(self.configured_path))
         else:
             data_dir = Path(_get_config("DATA_DIRECTORY"))
-            candidates.extend(sorted(data_dir.glob("*.csv")))
-            candidates.extend(sorted(data_dir.glob("*.xlsx")))
-            candidates.extend(sorted(data_dir.glob("*.xls")))
-            download_archive = Path.home() / "Downloads" / "Compressed" / "archive"
-            candidates.extend(sorted(download_archive.glob("fire_nrt_*.csv")))
+            if data_dir.exists():
+                candidates.extend(sorted(data_dir.glob("*.csv")))
+                candidates.extend(sorted(data_dir.glob("*.xlsx")))
+                candidates.extend(sorted(data_dir.glob("*.xls")))
+            # Fallback to bundled sample dataset (ideal for fresh git clones, CI, and Cloud deployment)
+            sample_dir = Path(Config.PROJECT_ROOT) / "data" / "sample"
+            if sample_dir.exists():
+                candidates.extend(sorted(sample_dir.glob("*.csv")))
+                candidates.extend(sorted(sample_dir.glob("*.xlsx")))
         for candidate in candidates:
             if candidate.is_file() and candidate.suffix.lower() in (".csv", ".xlsx", ".xls"):
                 return candidate
@@ -283,20 +287,21 @@ def list_available_datasets() -> list[dict]:
                         "can_delete": True,
                     })
 
-    # 3. Archive / Downloads fallback
-    download_archive = Path.home() / "Downloads" / "Compressed" / "archive"
-    if download_archive.exists():
-        for p in sorted(download_archive.glob("fire_nrt_*.csv")):
-            rp = p.resolve()
-            if rp not in seen_paths and p.is_file():
-                seen_paths.add(rp)
-                found.append({
-                    "name": p.name,
-                    "path": str(p),
-                    "size_mb": round(p.stat().st_size / (1024 * 1024), 2),
-                    "active": str(rp) == current_active,
-                    "can_delete": True,
-                })
+    # 3. Bundled sample dataset (for git clones, Streamlit Cloud, and CI runners)
+    sample_dir = Path(Config.PROJECT_ROOT) / "data" / "sample"
+    if sample_dir.exists():
+        for pat in patterns:
+            for p in sorted(sample_dir.glob(pat)):
+                rp = p.resolve()
+                if rp not in seen_paths and p.is_file():
+                    seen_paths.add(rp)
+                    found.append({
+                        "name": p.name,
+                        "path": str(p),
+                        "size_mb": round(p.stat().st_size / (1024 * 1024), 2),
+                        "active": str(rp) == current_active,
+                        "can_delete": False,
+                    })
 
     if found and not any(d["active"] for d in found) and not current_active:
         found[0]["active"] = True

@@ -1,5 +1,10 @@
 # FireScope — Professional Fire Analytics & Geospatial Intelligence Platform
 
+[![CI](https://github.com/Nahinrahman03/PROFESSIONAL-FIRE-ANALYTICS-EDA-PLATFORM/actions/workflows/ci.yml/badge.svg)](https://github.com/Nahinrahman03/PROFESSIONAL-FIRE-ANALYTICS-EDA-PLATFORM/actions/workflows/ci.yml)
+[![Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io)
+[![Python: 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **FireScope** is a high-performance, responsive **Streamlit** command-center platform for exploring active-fire detection data and satellite thermal anomaly telemetry. It converts compatible CSV or Excel files (such as NASA FIRMS VIIRS/MODIS exports) into an interactive geospatial intelligence environment featuring real-time data quality profiling, multi-layer heatmaps, diurnal burning dynamics, machine learning forecasting, and automated executive intelligence briefings.
 
 > *Note: This is an independent analytics project. It is not affiliated with, endorsed by, or branded as NASA. Detections originate from FIRMS-derived satellite observation exports.*
@@ -138,6 +143,15 @@ run.bat
 ```
 
 Open your browser at **`http://localhost:8501`**.
+
+### ☁️ One-Click Free Cloud Deployment (Streamlit Community Cloud)
+
+You can deploy FireScope live for free in 60 seconds:
+1. Fork or push this repository to GitHub.
+2. Sign in to [share.streamlit.io](https://share.streamlit.io).
+3. Click **"New app"**, select your repository: `Nahinrahman03/PROFESSIONAL-FIRE-ANALYTICS-EDA-PLATFORM`.
+4. Set Main file path to: `streamlit_app.py`.
+5. Click **"Deploy!"** — FireScope will automatically load the bundled sample dataset and go live with a shareable URL.
 
 ---
 
