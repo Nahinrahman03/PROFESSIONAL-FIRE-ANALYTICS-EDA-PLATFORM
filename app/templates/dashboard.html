@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Interactive exploratory data analysis dashboard for active fire detection datasets. Filter, visualize, and export fire data with real-time analytics.">
+  <title>FireScope — Exploratory Data Analysis & Interactive Fire Monitoring Dashboard</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- CDN preconnects for faster resource loading -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://cdn.plot.ly">
+  <link rel="preconnect" href="https://unpkg.com">
+
+  <!-- CSS: Font Awesome + Leaflet (non-render-blocking) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+  <!-- Preload heavy JS so browser fetches them early -->
+  <link rel="preload" href="https://cdn.plot.ly/plotly-2.35.2.min.js" as="script">
+  <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" as="script">
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="brand-mark"><i class="fa-solid fa-fire-flame-curved"></i></span>
+      <div><strong>FireScope</strong><small>Data for a Safer Tomorrow</small></div>
+    </div>
+    <nav id="nav">
+      <button class="nav-item active" data-view="overview"><i class="fa-solid fa-grid-2"></i>Overview</button>
+      <button class="nav-item" data-view="map"><i class="fa-regular fa-map"></i>Map Explorer</button>
+      <button class="nav-item" data-view="temporal"><i class="fa-regular fa-clock"></i>Temporal Analysis</button>
+      <button class="nav-item" data-view="intensity"><i class="fa-solid fa-bolt"></i>Fire Intensity</button>
+      <button class="nav-item" data-view="confidence"><i class="fa-solid fa-shield-halved"></i>Confidence Analysis</button>
+      <button class="nav-item" data-view="sources"><i class="fa-solid fa-satellite"></i>Source Comparison</button>
+      <button class="nav-item" data-view="geography"><i class="fa-solid fa-earth-americas"></i>Geographic Insights</button>
+      <button class="nav-item" data-view="data"><i class="fa-solid fa-table-columns"></i>Data Overview</button>
+      <button class="nav-item" data-view="download"><i class="fa-solid fa-download"></i>Download Data</button>
+      <button class="nav-item" data-view="train"><i class="fa-solid fa-brain"></i>Upload &amp; Train</button>
+      <button class="nav-item" data-view="alerts" id="nav-alerts"><i class="fa-solid fa-bell"></i>Alerts <span id="alerts-badge" class="nav-badge hidden">0</span></button>
+      <button class="nav-item" data-view="about"><i class="fa-solid fa-circle-info"></i>About Dataset</button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="sidebar-banner">
+        <h2>Smarter<br>Data.<br>Safer<br>Tomorrows.</h2>
+      </div>
+      <div class="sidebar-links">
+        <span class="version">v1.0.0</span>
+        <button class="foot-btn"><i class="fa-solid fa-gear"></i> Settings</button>
+        <button class="foot-btn"><i class="fa-regular fa-circle-question"></i> Help & Support</button>
+      </div>
+      <div class="user-profile">
+        <div class="avatar">NR</div>
+        <div class="user-info">
+          <strong>Nahin Rahman</strong>
+          <span>View Profile</span>
+        </div>
+        <i class="fa-solid fa-chevron-right"></i>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <header>
+      <label class="search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="search" placeholder="Search locations, satellites, or sources...">
+        <div class="shortcut"><span>Ctrl</span><span>K</span></div>
+      </label>
+
+      <div class="header-actions">
+        <div class="dataset-picker" id="header-dataset-picker" title="View & switch datasets">
+          <i class="fa-solid fa-database" style="color:var(--cyan)"></i>
+          <span id="header-dataset-name">Active Dataset</span>
+          <i class="fa-solid fa-chevron-right" style="font-size:10px;color:var(--muted)"></i>
+        </div>
+        <div class="date-picker" id="header-date-picker" style="cursor:pointer" title="Filter by date range">
+          <i class="fa-regular fa-calendar"></i>
+          <span id="header-date-range">All Dates</span>
+          <i class="fa-solid fa-chevron-down"></i>
+        </div>
+        <button id="filter-toggle" class="filter-button">
+          <i class="fa-solid fa-filter"></i> Filters
+          <b id="filter-count" class="filter-badge">0</b>
+        </button>
+      </div>
+    </header>
+
+    <section class="hero-banner">
+      <div class="hero-bg"></div>
+      <div class="hero-content">
+        <div class="hero-top">
+          <p class="welcome">Welcome back, <strong>Nahin 👋</strong></p>
+          <div class="hero-tags">
+            <span>MONITOR ANALYZE PREDICT</span>
+            <div class="tag-divider"></div>
+            <span>FOR A CLEANER,<br>SAFER PLANET</span>
+          </div>
+        </div>
+        
+        <h1 class="hero-title">Turn Data Into<br><span>Safer Tomorrows</span></h1>
+        <p class="hero-desc">Explore real-time fire activity, uncover insights and<br>make informed decisions using satellite data and<br>machine learning.</p>
+        
+        <div class="live-data-widget">
+          <div class="widget-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
+          <div class="widget-status">
+            <span>LIVE DATA STREAM</span>
+            <strong><span class="status-dot"></span> Connected</strong>
+          </div>
+          <div class="widget-divider"></div>
+          <div class="widget-records">
+            <strong id="dataset-count-val">-</strong>
+            <span>Records Loaded</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="error" class="error hidden"></section>
+    <section id="content"></section>
+  </main>
+
+  <section id="drawer" class="filter-drawer" aria-label="Filters">
+    <div class="drawer-title">
+      <h2>Filter dataset</h2>
+      <button class="icon-button" id="filter-close" aria-label="Close filters">×</button>
+    </div>
+    <div id="filter-fields"></div>
+    <div class="drawer-actions">
+      <button id="reset-filters" class="button secondary">Reset</button>
+      <button id="apply-filters" class="button primary">Apply filters</button>
+    </div>
+  </section>
+  <div id="scrim" class="scrim"></div>
+
+  <!-- Toast notification container -->
+  <div id="toast-container" aria-live="polite" aria-label="Notifications"></div>
+
+  <!-- defer: scripts download in parallel but execute after HTML parse — unblocks first paint -->
+  <script defer src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script defer src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script defer src="{{ url_for('static', filename='js/alerts.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
