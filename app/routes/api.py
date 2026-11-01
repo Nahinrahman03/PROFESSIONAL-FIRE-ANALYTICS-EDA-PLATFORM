@@ -229,13 +229,10 @@ def delete_dataset(filename: str):
     """Delete a dataset from data/raw/."""
     safe_name = Path(filename).name  # Prevent directory traversal
     data_dir = Path(current_app.config["DATA_DIRECTORY"])
-    download_archive = Path.home() / "Downloads" / "Compressed" / "archive"
 
     target = None
     if (data_dir / safe_name).is_file():
         target = data_dir / safe_name
-    elif (download_archive / safe_name).is_file():
-        target = download_archive / safe_name
 
     if not target or not target.is_file():
         return jsonify({"error": f"Dataset '{safe_name}' not found on server."}), 404

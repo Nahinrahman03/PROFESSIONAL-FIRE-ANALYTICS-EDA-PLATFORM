@@ -80,10 +80,12 @@ app/
 └── streamlit_app.py     Streamlit command-center application
 data/
 ├── raw/                 Local CSV/Excel datasets (.gitkeep tracked, large files ignored)
+├── sample/              Bundled zero-config fallback sample dataset
 ├── models/              Trained model directory (.gitkeep tracked)
 └── processed/           Processed data cache (.gitkeep tracked)
 tests/                   Comprehensive pytest suite
 streamlit_app.py         Root Streamlit entrypoint
+FireScope_Fire_Analytics_EDA.ipynb Standalone zero-dependency Jupyter Notebook
 run.py                   Cross-platform launcher with UTF-8 support
 run.bat / run.ps1        Windows one-click launchers
 requirements.txt         Python dependency declarations
